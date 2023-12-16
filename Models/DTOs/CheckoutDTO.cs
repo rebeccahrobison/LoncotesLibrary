@@ -14,6 +14,11 @@ public class CheckoutDTO
   public DateTime? ReturnDate { get; set; }
   public MaterialDTO Material { get; set; }
   public PatronDTO Patron { get; set; }
+  public bool Paid { get; set; }
+}
+  
+  
+  
   // private static decimal _lateFeePerDay
   // {
   //   get
@@ -32,4 +37,3 @@ public class CheckoutDTO
   //     return daysLate > 0 ? fee : null;
   //   }
   // }
-}

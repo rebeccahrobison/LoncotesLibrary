@@ -16,4 +16,21 @@ public class PatronDTO
   public bool IsActive { get; set; }
   public int Id { get; set; }
   public List<CheckoutDTO> Checkouts { get; set; }
+  public List<CheckoutWithLateFeeDTO> CheckoutsWithLateFee { get; set; }
+  public decimal? Balance
+  {
+    get
+    {
+      // total of unpaid fines a patron owes
+
+      List<CheckoutDTO> unpaidCheckouts = Checkouts.Where(co => !co.Paid).ToList();
+      List<CheckoutWithLateFeeDTO> unpaidCheckoutsWithFees = CheckoutsWithLateFee
+        .Where(clf => unpaidCheckouts.Select(uc => uc.Id).Contains(clf.Id))
+        .ToList();
+
+      return unpaidCheckoutsWithFees
+        .Where(uco => uco.LateFee.HasValue)
+        .Sum(co => co.LateFee.Value);
+    }
+  }
 }

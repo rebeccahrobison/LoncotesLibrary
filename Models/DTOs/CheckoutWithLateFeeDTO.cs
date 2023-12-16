@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LoncotesLibrary.Models.DTOs;
 
-public class CheckoutWithLateFeeDTO
+public class CheckoutWithLateFeeDTO 
 {
   public int Id { get; set; }
   [Required]

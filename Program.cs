@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using LoncotesLibrary.Models.DTOs;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,7 +99,7 @@ app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
         .Include(r => r.MaterialType)
         .Include(r => r.Checkouts)
         .ThenInclude(r => r.Patron)
-        .FirstOrDefault(m => m.Id == id);
+        .FirstOrDefault(co => co.Id == id);
 
     //error handler
     if (foundMaterial == null)
@@ -131,7 +132,16 @@ app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
             MaterialId = c.MaterialId,
             PatronId = c.PatronId,
             CheckoutDate = c.CheckoutDate,
-            ReturnDate = c.ReturnDate
+            ReturnDate = c.ReturnDate,
+            Patron = new PatronDTO
+            {
+                Id = c.Patron.Id,
+                FirstName = c.Patron.FirstName,
+                LastName = c.Patron.LastName,
+                Address = c.Patron.Address,
+                Email = c.Patron.Email,
+                IsActive = c.Patron.IsActive
+            }
         }).ToList()
     });
 });
@@ -158,7 +168,7 @@ app.MapDelete("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 });
 
 // Get MaterialTypes
-app.MapGet("api/materialTypes", (LoncotesLibraryDbContext db) =>
+app.MapGet("/api/materialTypes", (LoncotesLibraryDbContext db) =>
 {
     return db.MaterialTypes
         .Select(mt => new MaterialTypeDTO
@@ -170,7 +180,7 @@ app.MapGet("api/materialTypes", (LoncotesLibraryDbContext db) =>
 });
 
 // Get Genres
-app.MapGet("api/genres", (LoncotesLibraryDbContext db) =>
+app.MapGet("/api/genres", (LoncotesLibraryDbContext db) =>
 {
     return db.Genres
     .Select(g => new GenreDTO
@@ -192,6 +202,40 @@ app.MapGet("/api/patrons", (LoncotesLibraryDbContext db) =>
         Address = p.Address,
         Email = p.Email,
         IsActive = p.IsActive
+    });
+});
+
+// Get Patron Details
+app.MapGet("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    Patron foundPatron = db.Patrons
+        .Include(p => p.Checkouts)
+        .FirstOrDefault(p => p.Id == id);
+
+    if (foundPatron == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(new PatronDTO
+    {
+        Id = foundPatron.Id,
+        FirstName = foundPatron.FirstName,
+        LastName = foundPatron.LastName,
+        Address = foundPatron.Address,
+        Email = foundPatron.Email,
+        IsActive = foundPatron.IsActive,
+        CheckoutsWithLateFee = db.Checkouts
+            .Where(pco => pco.PatronId == foundPatron.Id)
+            .Select(c => new CheckoutWithLateFeeDTO
+            {
+                Id = c.Id,
+                MaterialId = c.MaterialId,
+                PatronId = c.PatronId,
+                CheckoutDate = c.CheckoutDate,
+                ReturnDate = c.ReturnDate
+            })
+            .ToList()
     });
 });
 
