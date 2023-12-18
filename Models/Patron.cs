@@ -16,6 +16,7 @@ public class Patron
   public bool IsActive { get; set; }
   public int Id { get; set; }
   public List<Checkout> Checkouts { get; set; }
+}
   // public decimal? Balance
   // {
   //   get
@@ -39,4 +40,4 @@ public class Patron
   //   int overdueDays = (int)(returnDate - checkoutDate).TotalDays;
   //   return overdueDays > 0 ? overdueDays * finePerDay : 0;
   // }
-}
+

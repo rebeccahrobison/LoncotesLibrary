@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LoncotesLibrary.Models.DTOs;
 
-public class CheckoutWithLateFeeDTO 
+public class CheckoutWithLateFeeDTO
 {
   public int Id { get; set; }
   [Required]
@@ -25,11 +25,18 @@ public class CheckoutWithLateFeeDTO
   {
     get
     {
-      DateTime dueDate = CheckoutDate.AddDays(Material.MaterialType.CheckoutDays);
-      DateTime returnDate = ReturnDate ?? DateTime.Today;
-      int daysLate = (returnDate - dueDate).Days;
-      decimal fee = daysLate * _lateFeePerDay;
-      return daysLate > 0 ? fee : null;
+      if (Material != null && Material.MaterialType != null)
+      {
+        DateTime dueDate = CheckoutDate.AddDays(Material.MaterialType.CheckoutDays);
+        DateTime returnDate = ReturnDate ?? DateTime.Today;
+        int daysLate = (returnDate - dueDate).Days;
+        decimal fee = daysLate * _lateFeePerDay;
+        return daysLate > 0 ? fee : null;
+      }
+      else
+      {
+        return null;
+      }
     }
   }
 }
